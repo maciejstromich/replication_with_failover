@@ -2,16 +2,18 @@
 REPMGR_CONFIG='/var/lib/postgresql/9.3/main/repmgr/repmgr.conf'
 OUTPUT_FILE=`mktemp`
 PG_DATA='/var/lib/postgresql/9.3/main'
-/bin/su - postgres -c "repmgr -f ${REPMGR_CONFIG} cluster show" > ${OUTPUT_FILE} 2>&1
-CMH=`/bin/grep "* master" ${OUTPUT_FILE} | /usr/bin/awk '{print $4}' | /usr/bin/awk -F "=" '{print $2}'`
+# not working when DB is offline. needs better solution ;-)
+#/bin/su - postgres -c "repmgr -f ${REPMGR_CONFIG} cluster show" > ${OUTPUT_FILE} 2>&1
+# CMH=`/bin/grep "* master" ${OUTPUT_FILE} | /usr/bin/awk '{print $4}' | /usr/bin/awk -F "=" '{print $2}'`
+CMH=other_db_name
 
-if [ "X{CMH}" != "X`/bin/hostname`" ]; then
+if [ "X${CMH}" != "X`/bin/hostname`" ]; then
         # Make sure that PostgreSQL is stopped
         if ps -p `cat /var/run/postgresql/9.3-main.pid` > /dev/null; then
           /etc/init.d/postgresql stop
         fi
         # Force repmgr to change failed master to slave
-        /bin/su - postgres -c "repmgr -D ${PG_DATA} --force standby clone ${CMH}"
+        /bin/su - postgres -c "repmgr -f ${REPMGR_CONFIG} -D ${PG_DATA} --force standby clone ${CMH}"
         /etc/init.d/postgresql start
         /sbin/initctl start repmgrd
 fi
