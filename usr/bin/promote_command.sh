@@ -1,4 +1,8 @@
 #!/bin/bash
+
+# note that this command is executed with postgres priviledges. 
+# becuase of that both nodes needs access to user which runs load balancer.
+
 LB_HOST=""
 LB_USER=""
 SOURCE_LB_CONFIG=~/configs/lb.configuration
